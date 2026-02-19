@@ -17,7 +17,8 @@ return {
   {
     "neovim/nvim-lspconfig",
     config = function()
-      require("lspconfig").clangd.setup({})
+      vim.lsp.config("clangd", {})
+      vim.lsp.enable("clangd")
     end,
   },
 
