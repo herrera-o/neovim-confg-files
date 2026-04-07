@@ -1,19 +1,25 @@
 return {
 
-  -- Treesitter for syntax highlighting and parsing
   {
     "nvim-treesitter/nvim-treesitter",
+    lazy = false,
     build = ":TSUpdate",
     config = function()
-      require("nvim-treesitter.configs").setup({
-        ensure_installed = { "c", "cpp", "lua", "vim", "bash", "asm" },
-        highlight = { enable = true },
-        indent = { enable = true },
+      require("nvim-treesitter").setup({
+        install_dir = vim.fn.stdpath("data") .. "/site",
+      })
+
+      require("nvim-treesitter").install({
+        "c",
+        "cpp",
+        "lua",
+        "vim",
+        "bash",
+        "asm",
       })
     end,
   },
 
-  -- LSP config
   {
     "neovim/nvim-lspconfig",
     config = function()
@@ -22,7 +28,6 @@ return {
     end,
   },
 
-  -- Autocompletion engine
   {
     "hrsh7th/nvim-cmp",
     dependencies = {
@@ -53,7 +58,6 @@ return {
         }),
       })
 
-      -- NASM-specific completion sources
       cmp.setup.filetype("nasm", {
         sources = cmp.config.sources({
           { name = "nvim_lsp" },
@@ -66,7 +70,6 @@ return {
     end,
   },
 
-  -- File explorer (optional)
   {
     "nvim-tree/nvim-tree.lua",
     dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -75,7 +78,6 @@ return {
     end,
   },
 
-  -- Statusline (optional)
   {
     "nvim-lualine/lualine.nvim",
     dependencies = { "nvim-tree/nvim-web-devicons" },
@@ -84,7 +86,6 @@ return {
     end,
   },
 
-  -- Telescope (fuzzy finder)
   {
     "nvim-telescope/telescope.nvim",
     dependencies = { "nvim-lua/plenary.nvim" },
