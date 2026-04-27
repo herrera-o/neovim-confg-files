@@ -25,35 +25,4 @@ return {
     },
   },
 
-  -- Mason + LSP for asm-lsp
-  {
-    "mason-org/mason-lspconfig.nvim",
-    dependencies = {
-      { "mason-org/mason.nvim", opts = {} },
-      "neovim/nvim-lspconfig",
-    },
-    opts = {
-      ensure_installed = { "asm_lsp" },
-      automatic_enable = true,
-    },
-    config = function(_, opts)
-      require("mason-lspconfig").setup(opts)
-
-      -- Attach to nasm filetype
-      if vim.lsp and vim.lsp.config then
-        vim.lsp.config("asm_lsp", {
-          filetypes = { "asm", "vmasm", "nasm" },
-          settings = {
-            ["asm-lsp"] = {
-              assembler = "nasm",
-              instruction_set = "x86/x86-64",
-              diagnostics = true,
-              default_diagnostics = true,
-            },
-          },
-        })
-      end
-    end,
-  },
-
 }

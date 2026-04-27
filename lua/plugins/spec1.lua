@@ -12,11 +12,61 @@ return {
       require("nvim-treesitter").install({
         "c",
         "cpp",
+        "javascript",
+        "typescript",
+        "python",
+        "java",
         "lua",
         "vim",
         "bash",
         "asm",
       })
+    end,
+  },
+
+  {
+    "mason-org/mason-lspconfig.nvim",
+    dependencies = {
+      { "mason-org/mason.nvim", opts = {} },
+      "neovim/nvim-lspconfig",
+    },
+    opts = {
+      ensure_installed = {
+        "asm_lsp",
+        "clangd",
+        "jdtls",
+        "pyright",
+        "ts_ls",
+      },
+      automatic_enable = true,
+    },
+    config = function(_, opts)
+      vim.lsp.config("asm_lsp", {
+        filetypes = { "asm", "vmasm", "nasm" },
+        settings = {
+          ["asm-lsp"] = {
+            assembler = "nasm",
+            instruction_set = "x86/x86-64",
+            diagnostics = true,
+            default_diagnostics = true,
+          },
+        },
+      })
+
+      vim.lsp.config("jdtls", {})
+      vim.lsp.config("pyright", {})
+      vim.lsp.config("ts_ls", {})
+
+      require("mason-lspconfig").setup(opts)
+
+      vim.lsp.enable("asm_lsp")
+      vim.lsp.enable("jdtls")
+      vim.lsp.enable("pyright")
+      local ok = pcall(vim.lsp.enable, "ts_ls")
+      if not ok then
+        vim.lsp.config("tsserver", {})
+        vim.lsp.enable("tsserver")
+      end
     end,
   },
 
