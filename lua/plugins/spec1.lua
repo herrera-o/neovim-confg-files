@@ -5,21 +5,32 @@ return {
     lazy = false,
     build = ":TSUpdate",
     config = function()
-      require("nvim-treesitter").setup({
-        install_dir = vim.fn.stdpath("data") .. "/site",
-      })
-
-      require("nvim-treesitter").install({
+      local parsers = {
+        "asm",
+        "bash",
         "c",
         "cpp",
-        "javascript",
-        "typescript",
-        "python",
         "java",
+        "javascript",
         "lua",
+        "python",
+        "typescript",
         "vim",
-        "bash",
-        "asm",
+      }
+
+      require("nvim-treesitter").setup()
+      vim.treesitter.language.register("asm", { "asm", "nasm", "vmasm" })
+      require("nvim-treesitter").install(parsers)
+
+      local group = vim.api.nvim_create_augroup("UserTreesitter", { clear = true })
+      vim.api.nvim_create_autocmd("FileType", {
+        group = group,
+        callback = function(args)
+          local lang = vim.treesitter.language.get_lang(vim.bo[args.buf].filetype)
+          if lang and pcall(vim.treesitter.start, args.buf, lang) then
+            vim.bo[args.buf].indentexpr = "v:lua.require'nvim-treesitter'.indentexpr()"
+          end
+        end,
       })
     end,
   },
@@ -29,6 +40,7 @@ return {
     dependencies = {
       { "mason-org/mason.nvim", opts = {} },
       "neovim/nvim-lspconfig",
+      "hrsh7th/cmp-nvim-lsp",
     },
     opts = {
       ensure_installed = {
@@ -41,7 +53,14 @@ return {
       automatic_enable = true,
     },
     config = function(_, opts)
+      local capabilities = vim.lsp.protocol.make_client_capabilities()
+      local ok, cmp_nvim_lsp = pcall(require, "cmp_nvim_lsp")
+      if ok then
+        capabilities = cmp_nvim_lsp.default_capabilities(capabilities)
+      end
+
       vim.lsp.config("asm_lsp", {
+        capabilities = capabilities,
         filetypes = { "asm", "vmasm", "nasm" },
         settings = {
           ["asm-lsp"] = {
@@ -53,28 +72,12 @@ return {
         },
       })
 
-      vim.lsp.config("jdtls", {})
-      vim.lsp.config("pyright", {})
-      vim.lsp.config("ts_ls", {})
+      vim.lsp.config("clangd", { capabilities = capabilities })
+      vim.lsp.config("jdtls", { capabilities = capabilities })
+      vim.lsp.config("pyright", { capabilities = capabilities })
+      vim.lsp.config("ts_ls", { capabilities = capabilities })
 
       require("mason-lspconfig").setup(opts)
-
-      vim.lsp.enable("asm_lsp")
-      vim.lsp.enable("jdtls")
-      vim.lsp.enable("pyright")
-      local ok = pcall(vim.lsp.enable, "ts_ls")
-      if not ok then
-        vim.lsp.config("tsserver", {})
-        vim.lsp.enable("tsserver")
-      end
-    end,
-  },
-
-  {
-    "neovim/nvim-lspconfig",
-    config = function()
-      vim.lsp.config("clangd", {})
-      vim.lsp.enable("clangd")
     end,
   },
 
